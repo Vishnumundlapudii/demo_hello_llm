@@ -95,6 +95,9 @@ def main():
         layout="centered"
     )
     
+    # Initialize session state first
+    initialize_session_state()
+    
     st.title("🤖 E2E LLM Chatbot")
     st.markdown("---")
     
@@ -142,8 +145,6 @@ def main():
             st.metric("User Messages", len(user_messages))
             st.metric("Bot Responses", len(assistant_messages))
     
-    # Initialize session state
-    initialize_session_state()
     
     # Main chat interface
     st.subheader("💬 Chat Interface")

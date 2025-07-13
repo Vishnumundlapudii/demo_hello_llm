@@ -25,7 +25,7 @@ class E2ENetworksLLM(LLM):
     top_p: float = 0.9
     timeout: int = 30
     
-    def __init__(
+    def __init__(l
         self,
         endpoint_url: str = None,
         api_key: str = None,
