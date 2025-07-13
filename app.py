@@ -42,16 +42,30 @@ class E2ELLM(LLM):
             "Authorization": f"Bearer {self.api_key}"
         }
         
+        # Use OpenAI-compatible chat completions format
         payload = {
-            "prompt": prompt,
+            "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
             "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "stop": stop
+            "max_tokens": self.max_tokens
         }
         
+        if stop:
+            payload["stop"] = stop
+        
         try:
+            # Ensure endpoint ends with chat/completions
+            endpoint = self.endpoint_url
+            if not endpoint.endswith("chat/completions"):
+                if endpoint.endswith("/"):
+                    endpoint += "chat/completions"
+                else:
+                    endpoint += "/chat/completions"
+            
             response = requests.post(
-                self.endpoint_url,
+                endpoint,
                 headers=headers,
                 json=payload,
                 timeout=30
@@ -59,7 +73,16 @@ class E2ELLM(LLM):
             response.raise_for_status()
             
             result = response.json()
-            return result.get("response", result.get("text", "No response received"))
+            
+            # Handle OpenAI-compatible response format
+            if "choices" in result and len(result["choices"]) > 0:
+                choice = result["choices"][0]
+                if "message" in choice:
+                    return choice["message"].get("content", "")
+                elif "text" in choice:
+                    return choice["text"]
+            
+            return "No valid response received"
             
         except requests.exceptions.RequestException as e:
             return f"Error calling E2E LLM: {str(e)}"
